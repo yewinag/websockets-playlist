@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>WebScockets 101</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.js"></script>
+        <link href="/styles.css" rel="stylesheet" />
+    </head>
+    <body>                
+        <div>        
+            <div id="player"></div>
+            <button id="play_video">
+                play
+            </button>        
+        </div>        
+    </body>
+    <script src="/chat.js"></script>
+    <script>
+        var socket = io.connect('http://localhost:4000');
+        var tag = document.createElement('script');
+  
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+          
+        var player;
+        function onYouTubeIframeAPIReady() {
+          player = new YT.Player('player', {
+            height: '390',
+            width: '640',
+            videoId: 'M7lc1UVf-VE',
+            events: {
+              'onReady': onPlayerReady,
+              'onStateChange': onPlayerStateChange
+            }
+          });
+        }        
+        function onPlayerReady(event) {
+          var play_video = document.getElementById('play_video');
+          play_video.addEventListener('click',function(){
+            socket.emit('chat');                        
+          })
+
+          socket.on('chat', function(){
+            event.target.playVideo();  
+          })
+          
+        }
+        var done = false;
+        function onPlayerStateChange(event) {
+          if (event.data == YT.PlayerState.PLAYING && !done) {
+            setTimeout(stopVideo, 6000);
+            done = true;
+          }
+        }
+        function stopVideo() {
+          player.stopVideo();
+        }
+      </script>
+</html>
